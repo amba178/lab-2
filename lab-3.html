@@ -18,58 +18,131 @@
         return <label className={props.for=="checkbox"? "form-check-label" : "" }>{props.label}</label>
       }
 
-      function InputField(props){
-        return <input className= {props.type=="checkbox"? "form-check-input" : "form-control"} name={props.name} type = {props.type} value = {props.value}/>
-      }
-
       function SelectField(props){
         var array = ["Science Lab","Swimming","Cooking","Painting"]
         var options = array.map((item) => <option value = {item}> {item} </option>)
         return <select className="form-control" name = {props.name}>{options}</select>
       }
+      function ItemButton(props){
+        return (
+            <button className="btn btn-sm btn-danger" onClick = {() => props.removeItem()}>{props.label} </button>
+          )}
+
+      class ItemRow extends React.Component{
+        render(){
+          const firstName = this.props.firstName 
+          const lastName  = this.props.lastName 
+          const selectName = this.props.selectName 
+          const checkboxArray = this.props.checkboxArray 
+          return(
+              <tr>     
+                <td><ItemButton label ="X"  removeItem={this.props.removeItem}/></td>
+                <td>{firstName}</td>
+                <td>{lastName}</td>
+                <td>{selectName}</td>
+                <td>{checkboxArray}</td>
+              </tr>            
+            )
+        }
+
+      }
 
       class App extends React.Component{
         constructor(props){
           super(props)
-          this.state = {items: [], checkboxArray: []}
+          this.state = {items: [], checkboxArray: [], checkedA: false, checkedA: false, checkedC: false}
           this.handleChange = this.handleChange.bind(this)
           this.handleSubmit = this.handleSubmit.bind(this)
           
         }
 
-      
-
         handleSubmit(event){
           let itemsCopy = this.state.items.slice();
-          itemsCopy.push({"firstName": this.state.firstName, "lastName": this.state.lastName, "selectName": this.state.selectName, "checkboxName": this.state.checkboxArray})
+          itemsCopy.push({"firstName": this.state.firstName, "lastName": this.state.lastName, "selectName": this.state.selectName, "checkboxArray": this.state.checkboxArray.sort().join("")})
+          console.log("before submiting form")
           this.setState({items: itemsCopy}, () => console.log(itemsCopy))
-          this.setState({firstName: "", lastName: "", "selectName": ""})
+          this.setState(prevState => ({
+                checkedA: false, checkedB: false, checkedC: false
+          }))
+          this.setState({firstName: "", lastName: "", selectName: "Science Lab", checkboxArray: []}, ()=> console.log(this.state))
           event.preventDefault()
         }
 
+        removeItem(index){
+          var itemsCopy = this.state.items.slice()
+          itemsCopy.splice(index, 1)
+          this.setState({items: itemsCopy})
+          return(itemsCopy)
+        
+        }
+
+
+        
         handleChange(event){
             const target = event.target; 
             const value = target.type === 'checkbox' ? target.checked : target.value;
             const name = target.name; 
             if(target.checked){
-                this.state.checkboxArray.push(target.name)
+                if(!this.state.checkboxArray.includes(target.name))
+                      this.state.checkboxArray.push(target.name)
+
+                if(name=="a"){
+                    this.setState(prevState => ({
+                      checkedA: true
+                    }))
+                }
+
+                if(name=="b"){
+                    this.setState(prevState => ({checkedB: true
+                    }))
+                }
+
+                if(name=="c"){
+                    this.setState(prevState => ({
+                      checkedC: true
+                    }))
+                }
+                
             }else{
+
                 let index = this.state.checkboxArray.indexOf(target.name)
-                this.setState({checkboxArray: this.state.checkboxArray.splice(index, 1)})
+                console.log(index)
+                if(name=='a'){
+                   this.state.checkboxArray.splice(index, 1)
+                  this.setState(prevState => ({checkedA: false}))
+                  }
+                if(name=='b'){
+                   this.state.checkboxArray.splice(index, 1)
+                  this.setState(prevState => ({checkedB: false}))
+                }
+                if(name=='a'){
+                   this.state.checkboxArray.splice(index, 1)
+                  this.setState(prevState => ({checkedA: false}))
+                }
+                console.log(index)
+                this.setState({checkboxArray: this.state.checkboxArray}, () => console.log(this.state))
+    
             }
 
-            this.setState( {[name]: value }, () => console.log(this.state))
+            this.setState( {[name]: value}, () => console.log(this.state))
         }
 
         render(){
                   var array = ["Science Lab","Swimming","Cooking","Painting"]
                   var options = array.map((item) => <option value = {item}> {item} </option>)
+                  var rows=[]
+
+                  this.state.items.forEach((item, index) => rows.push(
+                    <ItemRow firstName={item.firstName} lastName={item.lastName} selectName={item.selectName}
+                     checkboxArray={item.checkboxArray}  removeItem = {() => this.removeItem(index)}/>
+                    ))
           return (
+                <div> 
                  <form className="col-4" onSubmit = {this.handleSubmit}>
                   
                     <div className="form-group"> 
                      <LabelText for="text" label="First Name"/>
-                     <input className ="form-control" name = "firstName" type ="text" value = {this.state.firstName} onChange = {this.handleChange}/>
+                     <input className ="form-control" checked ={this.handle} name = "firstName" type ="text" value = {this.state.firstName} onChange = {this.handleChange}/>
                     </div>
 
                     <div className="form-group"> 
@@ -86,24 +159,41 @@
                     <LabelText for = "" label="Check all that apply:"/>
                     </div>
                     <div className="form-check"> 
-                      <input classNamae = "form-check-input" name = "a" type ="checkbox" value = {this.state.checkboxNameA} onChange = {this.handleChange}/>
+                     <input className= "form-check-input" name = "a" type ="checkbox" value = {this.state.a} onChange = {this.handleChange} checked={this.state.checkedA}/>
                       <LabelText for="checkbox" label="a) Dietary Restrictions"/>
                     </div>
 
                     <div className="form-check"> 
-                      <input classNamae = "form-check-input" name = "b" type ="checkbox" value = {this.state.checkboxNameB} onChange = {this.handleChange}/>
+                      <input className= "form-check-input" name = "b" type ="checkbox" value = {this.state.b} onChange = {this.handleChange} checked={this.state.checkedB}/>
                       <LabelText for="checkbox" label="b) Physical Disablities"/>
                     </div>
 
                     <div className="form-check"> 
-                      <input classNamae = "form-check-input" name = "c" type ="checkbox" value = {this.state.checkboxNameC} onChange = {this.handleChange}/>
+                      <input className = "form-check-input"  name = "c" type ="checkbox" value = {this.state.c} onChange = {this.handleChange} checked={this.state.checkedC}/>
                       <LabelText for="checkbox" label="c) Medical Needs"/>
                     </div>
                     <div>
-                      <button className="btn btn-primary btn-block">Submit</button>
+                      <button className="btn btn-primary btn-block" onClick={this.handleClick}>Submit</button>
                     </div>
 
                   </form>
+
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Remove</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Activity</th>
+                        <th>Restrictions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                     {rows}
+                    </tbody>
+                    
+                  </table>
+                </div>
 
                  )
         }
